@@ -25,15 +25,24 @@ oh yeah can make it a really simple CLI thing first
 
 
 def get_headlines(topic=None):
+    #2 levels of error: network error + api error
+    #network error e.g. request time out, connection error -> wrap requests.get() inside try/except
+    #api error -> need another handling
     try:
+        #Step 1: Get response from api
         response = requests.get(f"https://newsapi.org/v2/everything?q={topic}&sources=bbc-news&apiKey={news_api_key}")
         #want to restrict to english, cant use language and sources together
         content = response.json()
-        if len(content["articles"]) == 0:
-            print("no article found")
-        else:
-            print(content["articles"][0])
     except Exception as e:
-        print(e)
-    return content
+        print(f"Network Error: {e}")
+        return None #return None is no article is found
+
+    #Here the response has sth, no network error, check returned object is correct
+    if content["status"] != "ok":
+        return print(f"code: {content.get("code", "unknown code")}, message: {content.get("message", "unknown error")}")
+
+    return content.get("articles", [])
+
+    
+    
 
